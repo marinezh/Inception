@@ -189,11 +189,65 @@ sf_shared
 
 ---
 
-## Summary
+## SSH connection:
 
-These steps complete the essential setup for your Inception project environment:
-1. Root access and sudo privileges are configured
-2. APT package manager is properly configured for internet repositories
-3. VirtualBox Guest Additions and shared folder access are enabled
+# STEP 1 — Install SSH server (inside the VM)
+```bash
+sudo apt install -y openssh-server
+```
+# STEP 2 — Enable and start SSH
+```bash
+sudo systemctl enable ssh
+sudo systemctl start ssh
+```
+Check status:
+```bash
+sudo systemctl status ssh
+```
+Should be:
+active (running)
 
-Your system is now ready for further Inception project development.
+# STEP 3 — Get your VM IP address
+```bash
+ip a
+```
+Should be smth like this:
+inet 192.168.X.X
+
+# STEP 4 — Configure VirtualBox network (IMPORTANT)
+
+Recommended: Bridged Adapter
+
+Power OFF the VM
+VirtualBox → Settings → Network
+Adapter 1:
+Attached to: Bridged Adapter
+Name: your Wi-Fi / Ethernet
+Start VM again
+Re-check IP: ip a
+
+# STEP 5 — Connect from HOST
+On host computer terminal:
+```bash
+ssh mzhivoto@10.11.200.202
+```
+
+# Useful
+See ssh config file:
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+change or ensure:
+PermitRootLogin no
+PasswordAuthentication yes
+
+Save -> restart SSH
+```bash
+sudo systemctl restart ssh
+```
+
+To close ssh connection:
+```bash
+exit
+```
+or Cntl + D
