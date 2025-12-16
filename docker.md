@@ -25,7 +25,7 @@ docker ps
 ## 2️⃣ Install Docker Compose
 
 ```bash
-sudo apt install -y docker-compose
+sudo apt install -y docker-compose-plugin
 ```
 Test:
 ```bash

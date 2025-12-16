@@ -1,0 +1,29 @@
+>>> Make sure Docker starts on boot (host / VM) <<<<
+$ sudo systemctl enable docker
+$ sudo systemctl start docker
+
+Check:
+$ systemctl is-enabled docker
+
+>>> After VM reboot, do only this: <<<
+$ cd /media/sf_shared/Inception/srcs
+$ docker compose up -d
+
+>>> Verify docker and mariadb are runnig <<<
+$ docker ps
+
+then:
+$ docker logs mariadb
+
+>>> To clean start but keep data <<<
+$ docker compose down
+$ docker compose up -d
+
+>>> Fo full reset (delete DB!) <<<
+$ docker compose down
+$ sudo rm -rf /home/$USER/data/mariadb/*
+
+
+cd /media/sf_shared/Inception/srcs
+$ docker compose up -d
+$ docker logs mariadb
