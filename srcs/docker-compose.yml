@@ -13,6 +13,20 @@ services:
     expose:
       - "3306"
 
+  wordpress:
+    container_name: wordpress
+    build:
+      context: ./requirements/wordpress
+    env_file:
+      - .env
+    volumes:
+      - wp_files:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+    restart: always
+
 volumes:
   mariadb_data:
     driver: local
@@ -21,7 +35,13 @@ volumes:
       o: bind
       device: /home/mzhivoto/data/mariadb
 
+  wp_files:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mzhivoto/data/wordpress
+
 networks:
   inception:
     driver: bridge
-
