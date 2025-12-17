@@ -84,3 +84,22 @@ Clean separation of config vs runtime
 volumes:
   - wp_files:/var/www/html
 ```
+## NGINX SETTING UP
+
+### Make sh script executable
+```bash
+chmod +x srcs/requirements/nginx/tools/entrypoint.sh
+```
+build and start everything:
+```bash
+docker-compose up -d --build
+```
+check:
+```bash
+docker ps
+docker logs nginx
+```
+Rebuild and restart nginx
+```bash
+docker-compose up -d --build nginx
+```
