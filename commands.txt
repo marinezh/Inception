@@ -27,3 +27,26 @@ $ sudo rm -rf /home/$USER/data/mariadb/*
 cd /media/sf_shared/Inception/srcs
 $ docker compose up -d
 $ docker logs mariadb
+
+Prove wordpress works (without browser)
+$ docker exec -it wordpress ps aux | grep php-fpm
+$ ls ~/data/wordpress
+$ cat ~/data/wordpress/wp-config.php
+
+✔ All pass → WordPress is READY
+
+Option A (safe, no permission changes): read it from inside the container
+$ docker exec -it wordpress cat /var/www/html/wp-config.php
+
+Option B: check ownership/permissions on the host
+ls -l ~/data/wordpress/wp-config.php
+
+Make the file readable (by root user) (but keep it not world-readable):
+1. Change owner to you:
+$ sudo chown mzhivoto:mzhivoto ~/data/wordpress/wp-config.php
+
+2. Set permissions
+$ sudo chmod 640 ~/data/wordpress/wp-config.php
+
+should work now:
+$ cat ~/data/wordpress/wp-config.php
