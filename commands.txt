@@ -70,3 +70,61 @@ HTTP/2 500
 server: nginx/1.22.1
 date: Wed, 17 Dec 2025 17:10:52 GMT
 content-type: text/html; charset=UTF-8
+
+
+CHECK we do not have anything:
+1️⃣ Check containers (WordPress / MariaDB / Nginx):
+$ docker ps -a
+You should NOT see:
+nginx
+wordpress
+mariadb
+If nothing from your project is listed → ✅ containers are gone.
+
+2️⃣ Check volumes
+$ docker volume ls
+
+You should NOT see volumes related to Inception
+(especially since you use bind mounts, this should usually be empty or unrelated).
+
+3️⃣ Check networks
+$ docker network ls
+
+There should be no custom inception network
+Only defaults like:
+
+bridge
+host
+none
+If inception is gone → ✅
+
+4️⃣ Check images (optional but good)
+$ docker images
+
+You may still see images like:
+
+nginx
+debian
+unnamed <none>
+⚠️ Images can exist and this is OK for the subject.
+They don’t count as “running services”.
+
+If you want to clean them anyway:
+$ docker image prune -f
+
+5️⃣ Check host data folders (VERY IMPORTANT)
+Since you bind-mount:
+$ ls -la /home/mzhivoto/data
+You should see:
+
+either nothing
+or empty mariadb/ and wordpress/ folders
+Check inside:
+$ ls -la /home/mzhivoto/data/mariadb
+$ ls -la /home/mzhivoto/data/wordpress
+
+6️⃣ Check ports (ensure nothing listens on 443)
+$ sudo ss -tulpn | grep :443
+
+There should be no output.
+If something is listening → nginx is still running somewhere.

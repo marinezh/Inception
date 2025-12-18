@@ -45,5 +45,6 @@ SQL
   wait "$pid" 2>/dev/null || true
 fi
 
+
 echo "[mariadb] Starting MariaDB..."
 exec mysqld --user=mysql --datadir=/var/lib/mysql --bind-address=0.0.0.0

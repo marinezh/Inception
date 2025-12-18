@@ -5,7 +5,21 @@ WP_PATH=/var/www/html
 PHP_VER="8.2"
 WWW_CONF="/etc/php/${PHP_VER}/fpm/pool.d/www.conf"
 
-# Wait for MariaDB to be ready
+# -----------------------------
+# 1) Ensure WordPress files exist (download first so nginx has index.php)
+# -----------------------------
+if [ ! -f "$WP_PATH/index.php" ]; then
+    echo "Downloading WordPress core..."
+    cd "$WP_PATH"
+    wget https://wordpress.org/latest.tar.gz -O /tmp/wp.tar.gz
+    tar -xzf /tmp/wp.tar.gz -C /tmp
+    mv /tmp/wordpress/* "$WP_PATH/"
+    rm -rf /tmp/wordpress /tmp/wp.tar.gz
+fi
+
+# -----------------------------
+# 2) Wait for MariaDB before config/install
+# -----------------------------
 echo "Waiting for MariaDB..."
 while ! mariadb -h"$MYSQL_HOST" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SELECT 1" >/dev/null 2>&1; do
     sleep 2
@@ -13,16 +27,9 @@ done
 echo "MariaDB is ready!"
 
 # -----------------------------
-# 1) Install/config WordPress (first run only)
+# 3) Configure and install WordPress (first run only)
 # -----------------------------
 if [ ! -f "$WP_PATH/wp-config.php" ]; then
-    echo "Downloading WordPress..."
-    cd "$WP_PATH"
-    wget https://wordpress.org/latest.tar.gz -O /tmp/wp.tar.gz
-    tar -xzf /tmp/wp.tar.gz -C /tmp
-    mv /tmp/wordpress/* "$WP_PATH/"
-    rm -rf /tmp/wordpress /tmp/wp.tar.gz
-
     echo "Creating wp-config.php with WP-CLI..."
     wp config create \
         --dbname="$MYSQL_DATABASE" \
