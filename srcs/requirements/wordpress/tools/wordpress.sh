@@ -43,6 +43,9 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
     echo "WordPress installation complete!"
 fi
 
+# Ensure runtime ownership for uploads and updates
+chown -R www-data:www-data "$WP_PATH"
+
 # -----------------------------
 # 2) Start php-fpm in foreground (PID 1)
 # -----------------------------
