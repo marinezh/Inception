@@ -128,3 +128,6 @@ $ sudo ss -tulpn | grep :443
 
 There should be no output.
 If something is listening → nginx is still running somewhere.
+
+7️⃣ One-line “everything clean?” command
+$ docker ps -a && docker network ls && ls -la /home/mzhivoto/data

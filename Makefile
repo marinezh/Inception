@@ -15,6 +15,7 @@ all: up
 
 prepare-dirs:
 	mkdir -p $(DATA_DIRS)
+	$(SUDO) chown -R mzhivoto:mzhivoto /home/mzhivoto/data
 	$(SUDO) chmod 755 /home/mzhivoto/data
 	$(SUDO) chmod 755 $(DATA_DIRS)
 

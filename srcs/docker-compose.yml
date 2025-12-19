@@ -3,12 +3,21 @@ services:
     container_name: mariadb
     build:
       context: ./requirements/mariadb
+    image: mariadb:42
     env_file:
       - .env
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
       - inception
+    secrets:
+      - db_password
+      - db_root_password
     restart: unless-stopped
     expose:
       - "3306"
@@ -17,8 +26,24 @@ services:
     container_name: wordpress
     build:
       context: ./requirements/wordpress
+    image: wordpress:42
     env_file:
       - .env
+    environment:
+      MYSQL_HOST: mariadb
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+
+      WP_URL: ${WP_URL}
+      WP_TITLE: ${WP_TITLE}
+      WP_ADMIN_USER: ${WP_ADMIN_USER}
+      WP_ADMIN_PASSWORD: ${WP_ADMIN_PASSWORD}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL}
+    secrets:
+      - db_password
+      - db_root_password
     volumes:
       - wp_files:/var/www/html
     networks:
@@ -27,11 +52,13 @@ services:
       - mariadb
     restart: always
     expose:
-      - "9000"   # php-fpm (internal only)
+      - "9000"
+
   nginx:
     container_name: nginx
     build:
       context: ./requirements/nginx
+    image: nginx:42
     env_file:
       - .env
     volumes:
@@ -42,7 +69,7 @@ services:
       - wordpress
     restart: always
     ports:
-      - "443:443"   # ONLY entrypoint
+      - "443:443"
 
 volumes:
   mariadb_data:
@@ -50,15 +77,21 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${MARIADB_DATA_PATH:-/home/mzhivoto/data/mariadb}
+      device: /home/mzhivoto/data/mariadb
 
   wp_files:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${WORDPRESS_DATA_PATH:-/home/mzhivoto/data/wordpress}
+      device: /home/mzhivoto/data/wordpress
 
 networks:
   inception:
     driver: bridge
+
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
