@@ -1,7 +1,7 @@
 FROM debian:bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx openssl ca-certificates \
+    nginx openssl ca-certificates netcat-openbsd \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy config + entrypoint

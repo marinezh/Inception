@@ -34,8 +34,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
-
+   
       WP_URL: ${WP_URL}
       WP_TITLE: ${WP_TITLE}
       WP_ADMIN_USER: ${WP_ADMIN_USER}
@@ -43,7 +42,6 @@ services:
       WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL}
     secrets:
       - db_password
-      - db_root_password
     volumes:
       - wp_files:/var/www/html
     networks:

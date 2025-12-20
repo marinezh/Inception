@@ -4,6 +4,7 @@ RUN apt update && apt install -y \
     php-fpm php-mysql php-curl php-gd php-intl \
     php-mbstring php-soap php-xml php-xmlrpc \
     php-zip wget curl mariadb-client \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /run/php /var/log/php-fpm
@@ -22,5 +23,4 @@ RUN chmod +x /usr/local/bin/wordpress.sh
 
 EXPOSE 9000
 
-ENTRYPOINT ["wordpress.sh"]
-CMD ["php-fpm8.2", "-F"]
+ENTRYPOINT ["/usr/local/bin/wordpress.sh"]

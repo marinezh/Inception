@@ -131,3 +131,14 @@ If something is listening → nginx is still running somewhere.
 
 7️⃣ One-line “everything clean?” command
 $ docker ps -a && docker network ls && ls -la /home/mzhivoto/data
+
+REQUIRED: full reset
+make down
+docker compose -f srcs/docker-compose.yml down -v --remove-orphans
+sudo rm -rf /home/mzhivoto/data/mariadb /home/mzhivoto/data/wordpress
+docker image rm -f mariadb:42 wordpress:42 nginx:42 2>/dev/null || true
+make up
+
+docker exec -it wordpress mariadb -h mariadb -u wp_user -p"$(cat /run/secrets/db_password)" -e "SELECT 1;"
+docker exec -it wordpress ss -lntp | grep 9000
+curl -k https://mzhivoto.42.fr
