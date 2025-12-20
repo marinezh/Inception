@@ -15,5 +15,15 @@ if [ ! -f "$CRT" ] || [ ! -f "$KEY" ]; then
     -keyout "$KEY" -out "$CRT" \
     -subj "/C=FI/ST=Uusimaa/L=Helsinki/O=42/OU=Inception/CN=${DOMAIN_NAME}"
 fi
+# Wait for WordPress files to be present to avoid initial 403
+TARGET="/var/www/html/index.php"
+echo "[nginx] Waiting for WordPress files at $TARGET ..."
+for i in $(seq 1 60); do
+  if [ -f "$TARGET" ]; then
+    echo "[nginx] Found WordPress files."
+    break
+  fi
+  sleep 2
+done
 
 exec nginx -g "daemon off;"
