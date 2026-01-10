@@ -3,6 +3,20 @@ set -eu
 
 WP_PATH="/var/www/html"
 
+# ---- load secrets if provided (must happen BEFORE required var checks) ----
+if [ -n "${MYSQL_PASSWORD_FILE:-}" ] && [ -f "$MYSQL_PASSWORD_FILE" ]; then
+  MYSQL_PASSWORD="$(cat "$MYSQL_PASSWORD_FILE")"
+fi
+
+if [ -n "${MYSQL_ROOT_PASSWORD_FILE:-}" ] && [ -f "$MYSQL_ROOT_PASSWORD_FILE" ]; then
+  MYSQL_ROOT_PASSWORD="$(cat "$MYSQL_ROOT_PASSWORD_FILE")"
+fi
+
+# NEW: WordPress admin password via Docker secret
+if [ -n "${WP_ADMIN_PASSWORD_FILE:-}" ] && [ -f "$WP_ADMIN_PASSWORD_FILE" ]; then
+  WP_ADMIN_PASSWORD="$(cat "$WP_ADMIN_PASSWORD_FILE")"
+fi
+
 # ---- required vars ----
 : "${MYSQL_HOST:?MYSQL_HOST is required}"
 : "${MYSQL_DATABASE:?MYSQL_DATABASE is required}"
@@ -11,19 +25,12 @@ WP_PATH="/var/www/html"
 : "${WP_URL:?WP_URL is required}"
 : "${WP_TITLE:?WP_TITLE is required}"
 : "${WP_ADMIN_USER:?WP_ADMIN_USER is required}"
-: "${WP_ADMIN_PASSWORD:?WP_ADMIN_PASSWORD is required}"
+: "${WP_ADMIN_PASSWORD:?WP_ADMIN_PASSWORD (or WP_ADMIN_PASSWORD_FILE) is required}"
 : "${WP_ADMIN_EMAIL:?WP_ADMIN_EMAIL is required}"
 
-# ---- load secrets if provided ----
-if [ -n "${MYSQL_PASSWORD_FILE:-}" ] && [ -f "$MYSQL_PASSWORD_FILE" ]; then
-  MYSQL_PASSWORD="$(cat "$MYSQL_PASSWORD_FILE")"
-fi
-if [ -n "${MYSQL_ROOT_PASSWORD_FILE:-}" ] && [ -f "$MYSQL_ROOT_PASSWORD_FILE" ]; then
-  MYSQL_ROOT_PASSWORD="$(cat "$MYSQL_ROOT_PASSWORD_FILE")"
-fi
 : "${MYSQL_PASSWORD:?MYSQL_PASSWORD (or MYSQL_PASSWORD_FILE) is required}"
 
-export MYSQL_PASSWORD MYSQL_ROOT_PASSWORD
+export MYSQL_PASSWORD MYSQL_ROOT_PASSWORD WP_ADMIN_PASSWORD
 
 # ---- 1) Ensure WordPress files exist ----
 if [ ! -f "$WP_PATH/index.php" ]; then
@@ -68,6 +75,16 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
     --admin_email="$WP_ADMIN_EMAIL" \
     --skip-email \
     --allow-root
+    # ---- Create second WordPress user (non-admin, once) ----
+  if ! wp user get editor --path="$WP_PATH" --allow-root >/dev/null 2>&1; then
+    echo "[wordpress] Creating secondary WordPress user (editor)..."
+    wp user create \
+      editor editor@example.com \
+      --role=subscriber \
+      --path="$WP_PATH" \
+      --user_pass=editor42 \
+      --allow-root
+  fi
 
   echo "[wordpress] WordPress installation complete!"
 fi
