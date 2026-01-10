@@ -75,6 +75,16 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
     --admin_email="$WP_ADMIN_EMAIL" \
     --skip-email \
     --allow-root
+    # ---- Create second WordPress user (non-admin, once) ----
+  if ! wp user get editor --path="$WP_PATH" --allow-root >/dev/null 2>&1; then
+    echo "[wordpress] Creating secondary WordPress user (editor)..."
+    wp user create \
+      editor editor@example.com \
+      --role=subscriber \
+      --path="$WP_PATH" \
+      --user_pass=editor42 \
+      --allow-root
+  fi
 
   echo "[wordpress] WordPress installation complete!"
 fi
