@@ -34,6 +34,8 @@ fi
 : "${WP_ADMIN_EMAIL:?WP_ADMIN_EMAIL is required}"
 
 : "${MYSQL_PASSWORD:?MYSQL_PASSWORD (or MYSQL_PASSWORD_FILE) is required}"
+MYSQL_PORT="${MYSQL_PORT:-3306}"
+echo "[wordpress] DB target: ${MYSQL_HOST}:${MYSQL_PORT}"
 
 export MYSQL_PASSWORD MYSQL_ROOT_PASSWORD WP_ADMIN_PASSWORD
 
@@ -50,7 +52,8 @@ fi
 # ---- 2) Wait for MariaDB (bounded, evaluator-safe) ----
 echo "[wordpress] Waiting for MariaDB server (max 90s)..."
 i=0
-until mariadb-admin ping -h"$MYSQL_HOST" --connect-timeout=2 --silent >/dev/null 2>&1
+until mariadb-admin ping -h"$MYSQL_HOST" -P"$MYSQL_PORT" --connect-timeout=2 --silent >/dev/null 2>&1
+
 do
   i=$((i+1))
   [ "$i" -ge 90 ] && echo "[wordpress] ERROR: MariaDB server not reachable after 90s" && exit 1
@@ -67,7 +70,7 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
     --dbname="$MYSQL_DATABASE" \
     --dbuser="$MYSQL_USER" \
     --dbpass="$MYSQL_PASSWORD" \
-    --dbhost="$MYSQL_HOST" \
+    --dbhost="${MYSQL_HOST}:${MYSQL_PORT}" \
     --allow-root
 
   echo "[wordpress] Installing WordPress..."

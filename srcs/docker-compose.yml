@@ -22,7 +22,7 @@ services:
     expose:
       - "3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-P", "3306"]
       interval: 10s
       retries: 15
       timeout: 10s
@@ -37,6 +37,7 @@ services:
       - .env
     environment:
       MYSQL_HOST: mariadb
+      MYSQL_PORT: 3306
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
