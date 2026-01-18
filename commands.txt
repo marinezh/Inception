@@ -142,3 +142,13 @@ make up
 docker exec -it wordpress mariadb -h mariadb -u wp_user -p"$(cat /run/secrets/db_password)" -e "SELECT 1;"
 docker exec -it wordpress ss -lntp | grep 9000
 
+curl -kI https://mzhivoto.42.fr
+
+##show containers status
+$ docker ps
+or
+$ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+$ docker ps --format "table {{.Names}}\t{{.Status}}"
+
+## see logs
+$ docker logs --tail=200 wordpress

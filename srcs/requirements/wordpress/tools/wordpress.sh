@@ -12,10 +12,15 @@ if [ -n "${MYSQL_ROOT_PASSWORD_FILE:-}" ] && [ -f "$MYSQL_ROOT_PASSWORD_FILE" ];
   MYSQL_ROOT_PASSWORD="$(cat "$MYSQL_ROOT_PASSWORD_FILE")"
 fi
 
-# NEW: WordPress admin password via Docker secret
+# WordPress admin password via Docker secret
 if [ -n "${WP_ADMIN_PASSWORD_FILE:-}" ] && [ -f "$WP_ADMIN_PASSWORD_FILE" ]; then
   WP_ADMIN_PASSWORD="$(cat "$WP_ADMIN_PASSWORD_FILE")"
 fi
+
+if [ -n "${WP_USER_PASSWORD_FILE:-}" ] && [ -f "$WP_USER_PASSWORD_FILE" ]; then
+  WP_USER_PASSWORD="$(cat "$WP_USER_PASSWORD_FILE")"
+fi
+
 
 # ---- required vars ----
 : "${MYSQL_HOST:?MYSQL_HOST is required}"
@@ -29,6 +34,8 @@ fi
 : "${WP_ADMIN_EMAIL:?WP_ADMIN_EMAIL is required}"
 
 : "${MYSQL_PASSWORD:?MYSQL_PASSWORD (or MYSQL_PASSWORD_FILE) is required}"
+MYSQL_PORT="${MYSQL_PORT:-3306}"
+echo "[wordpress] DB target: ${MYSQL_HOST}:${MYSQL_PORT}"
 
 export MYSQL_PASSWORD MYSQL_ROOT_PASSWORD WP_ADMIN_PASSWORD
 
@@ -45,7 +52,8 @@ fi
 # ---- 2) Wait for MariaDB (bounded, evaluator-safe) ----
 echo "[wordpress] Waiting for MariaDB server (max 90s)..."
 i=0
-until mariadb-admin ping -h"$MYSQL_HOST" --connect-timeout=2 --silent >/dev/null 2>&1
+until mariadb-admin ping -h"$MYSQL_HOST" -P"$MYSQL_PORT" --connect-timeout=2 --silent >/dev/null 2>&1
+
 do
   i=$((i+1))
   [ "$i" -ge 90 ] && echo "[wordpress] ERROR: MariaDB server not reachable after 90s" && exit 1
@@ -62,7 +70,7 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
     --dbname="$MYSQL_DATABASE" \
     --dbuser="$MYSQL_USER" \
     --dbpass="$MYSQL_PASSWORD" \
-    --dbhost="$MYSQL_HOST" \
+    --dbhost="${MYSQL_HOST}:${MYSQL_PORT}" \
     --allow-root
 
   echo "[wordpress] Installing WordPress..."
@@ -75,15 +83,23 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
     --admin_email="$WP_ADMIN_EMAIL" \
     --skip-email \
     --allow-root
-    # ---- Create second WordPress user (non-admin, once) ----
+
   if ! wp user get editor --path="$WP_PATH" --allow-root >/dev/null 2>&1; then
     echo "[wordpress] Creating secondary WordPress user (editor)..."
-    wp user create \
-      editor editor@example.com \
-      --role=subscriber \
-      --path="$WP_PATH" \
-      --user_pass=editor42 \
-      --allow-root
+    if [ -n "${WP_USER_PASSWORD:-}" ]; then
+      wp user create \
+        editor editor@example.com \
+        --role=editor \
+        --user_pass="$WP_USER_PASSWORD" \
+        --path="$WP_PATH" \
+        --allow-root
+    else
+      wp user create \
+        editor editor@example.com \
+        --role=editor \
+        --path="$WP_PATH" \
+        --allow-root
+    fi
   fi
 
   echo "[wordpress] WordPress installation complete!"
