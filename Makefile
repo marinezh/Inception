@@ -19,10 +19,12 @@ NGINX_IMAGE = nginx:42
 all: up
 
 prepare-dirs:
-	mkdir -p $(DATA_DIRS)
-	$(SUDO) chown -R mzhivoto:mzhivoto /home/mzhivoto/data
-	$(SUDO) chmod 755 /home/mzhivoto/data
-	$(SUDO) chmod 755 $(DATA_DIRS)
+	@mkdir -p $(DATA_DIRS)
+	@if [ -d /home/mzhivoto/data ]; then \
+		$(SUDO) chown -R $(USER):$(USER) /home/mzhivoto/data; \
+		$(SUDO) chmod 755 /home/mzhivoto/data; \
+	fi
+	@$(SUDO) chmod 755 $(DATA_DIRS) 2>/dev/null || true
 
 build: prepare-dirs
 	$(COMPOSE) build
