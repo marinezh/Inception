@@ -1,3 +1,4 @@
+NAME = Inception
 COMPOSE_FILE := srcs/docker-compose.yml
 COMPOSE      := docker compose -f $(COMPOSE_FILE)
 
@@ -6,8 +7,12 @@ MARIADB_DATA_PATH    ?= /home/mzhivoto/data/mariadb
 WORDPRESS_DATA_PATH  ?= /home/mzhivoto/data/wordpress
 DATA_DIRS            := $(MARIADB_DATA_PATH) $(WORDPRESS_DATA_PATH)
 
-# Use sudo for operations that may require elevated permissions
 SUDO ?= sudo
+
+# Define image names
+MARIADB_IMAGE = mariadb:42
+WORDPRESS_IMAGE = wordpress:42
+NGINX_IMAGE = nginx:42
 
 .PHONY: all up build down clean fclean re logs prepare-dirs
 

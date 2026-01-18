@@ -76,6 +76,8 @@ services:
     image: nginx:42
     env_file:
       - .env
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
     volumes:
       - wp_files:/var/www/html:ro
     networks:
@@ -93,14 +95,14 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /home/mzhivoto/data/mariadb
+      device: ${MARIADB_DATA_PATH:-/home/mzhivoto/data/mariadb}
 
   wp_files:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /home/mzhivoto/data/wordpress
+      device: ${WORDPRESS_DATA_PATH:-/home/mzhivoto/data/wordpress}
 
 networks:
   inception:

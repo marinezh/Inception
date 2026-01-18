@@ -120,3 +120,8 @@ $ docker logs wordpress --tail=200
 ## check do we have wp-config.php
 $ docker exec -it wordpress grep -n "DB_HOST" /var/www/html/wp-config.php
 
+## check sertificate
+$ docker exec nginx openssl x509 -in /etc/nginx/ssl/server.crt -noout -subject
+
+-Expected Output:
+subject=C=FI, ST=Uusimaa, L=Helsinki, O=42, OU=Inception, CN=mzhivoto.42.fr

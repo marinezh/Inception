@@ -11,6 +11,8 @@ RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default /e
 COPY conf/nginx.conf /etc/nginx/nginx.conf
 COPY tools/entrypoint.sh /entrypoint.sh
 
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 443
 
 ENTRYPOINT ["/entrypoint.sh"]
