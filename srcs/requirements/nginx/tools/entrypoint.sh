@@ -18,6 +18,7 @@ fi
 # Wait for WordPress files to be present to avoid initial 403
 TARGET="/var/www/html/index.php"
 echo "[nginx] Waiting for WordPress files at $TARGET ..."
+i=0
 for i in $(seq 1 60); do
   if [ -f "$TARGET" ]; then
     echo "[nginx] Found WordPress files."
@@ -25,5 +26,7 @@ for i in $(seq 1 60); do
   fi
   sleep 2
 done
+[ "$i" -eq 60 ] && echo "[nginx] WARNING: WordPress files not found after 120s"
 
 exec nginx -g "daemon off;"
+

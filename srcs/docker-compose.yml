@@ -18,7 +18,7 @@ services:
     secrets:
       - db_password
       - db_root_password
-    restart: unless-stopped
+    restart: always
     expose:
       - "3306"
     healthcheck:
