@@ -125,3 +125,180 @@ $ docker exec nginx openssl x509 -in /etc/nginx/ssl/server.crt -noout -subject
 
 -Expected Output:
 subject=C=FI, ST=Uusimaa, L=Helsinki, O=42, OU=Inception, CN=mzhivoto.42.fr
+
+# Check nginx configuration to see protocols
+docker exec nginx grep "ssl_protocols" /etc/nginx/nginx.conf
+-Expected Output:
+ssl_protocols TLSv1.2 TLSv1.3;
+
+1. Show Containers are Separate:
+# WordPress has php-fpm, not nginx
+docker exec wordpress which php-fpm8.2
+docker exec wordpress which nginx  # Should fail
+
+# MariaDB has only database, not nginx
+docker exec mariadb which mysqld
+docker exec mariadb which nginx  # Should fail
+
+2. Show Volumes:
+docker volume ls
+# Should show:
+# - srcs_mariadb_data
+# - srcs_wp_files
+
+docker volume inspect srcs_mariadb_data
+docker volume inspect srcs_wp_files
+
+3. Show Network:
+docker network ls
+# Should show: srcs_inception
+
+docker network inspect srcs_inception
+# Should show all 3 containers connected
+
+4. Test Restart Policy:
+# Kill a container and watch it restart
+docker stop wordpress
+docker ps  # Wait a few seconds, wordpress should be back
+
+# Or kill the process
+docker exec wordpress pkill php-fpm
+docker ps  # Container should restart automatically
+
+5. Check we donot have daemon (tail -f)
+Проверка 1: Какой процесс PID 1?
+$docker exec nginx ps aux
+
+Хороший результат:
+PID   COMMAND
+1     nginx: master process nginx -g daemon off
+
+Плохой результат:
+PID   COMMAND
+1     /bin/sh
+7     nginx: master process
+
+Проверка 2: Foreground режим?
+$docker exec nginx ps aux | grep nginx
+Должно быть daemon off в команде.
+
+Проверка 3: Graceful остановка?
+$time docker stop nginx
+
+Конечно! Объясню концепцию демонов и Docker по-русски:
+
+Что такое Демон (Daemon)?
+Демон — это фоновый процесс в Unix/Linux системах, который:
+
+Работает в фоне (background)
+Отсоединяется от терминала
+Обычно запускается при загрузке системы
+Примеры: nginx, mysqld, sshd
+Пример на обычном сервере:
+Когда nginx запускается как демон:
+
+Создаётся родительский процесс
+Он создаёт дочерний процесс (fork)
+Родитель умирает
+Дочерний процесс продолжает работать в фоне
+Ты получаешь контроль над терминалом обратно
+Почему в Docker это НЕ работает?
+Docker контейнер ≠ Виртуальная машина
+Виртуальная машина	Docker контейнер
+Полная ОС с init системой	Один главный процесс
+Systemd/init управляет процессами	Процесс с PID 1 = главный
+Много сервисов одновременно	Один сервис = один контейнер
+Демоны работают нормально	Нужны foreground процессы
+Проблема с демонами в Docker:
+Результат: Контейнер сразу останавливается после запуска.
+
+❌ Плохие практики (хаки):
+Некоторые люди пытаются "обмануть" Docker:
+
+Хак 1: tail -f
+Что это делает:
+
+Запускает nginx в фоне
+Запускает tail -f чтобы держать контейнер живым
+tail читает лог файл бесконечно
+Почему это плохо:
+
+Главный процесс = tail, а не nginx
+Если nginx упадёт, контейнер продолжает работать (зомби)
+Docker не знает о состоянии nginx
+Нельзя нормально остановить
+Хак 2: sleep infinity
+Почему это плохо:
+
+Главный процесс = sleep
+Нет связи с реальным приложением
+Контейнер висит даже если nginx умер
+Хак 3: while true
+Почему это плохо:
+
+То же самое — главный процесс не nginx
+✅ Правильный способ:
+Запускать процесс в foreground режиме
+Foreground (передний план) = процесс НЕ уходит в фон, блокирует терминал
+
+Твой код — ПРАВИЛЬНЫЙ:
+1. Nginx:
+Что это значит:
+
+daemon off = не уходить в фон, работать в foreground
+exec = заменить текущий процесс (shell) на nginx
+nginx становится PID 1 (главным процессом)
+2. MariaDB:
+Что это значит:
+
+mysqld по умолчанию работает в foreground
+exec делает его PID 1
+3. PHP-FPM:
+Что это значит:
+
+-F = foreground режим (не демон)
+exec делает его PID 1
+Что такое exec?
+Без exec:
+Дерево процессов:
+
+Проблема:
+
+Главный процесс = shell, не nginx
+docker stop отправляет сигнал SIGTERM shell'у
+Shell может не передать сигнал nginx
+Docker ждёт 10 секунд, потом убивает всё (SIGKILL)
+С exec:
+Дерево процессов:
+
+Преимущества:
+
+nginx напрямую получает сигналы
+Graceful shutdown работает
+Чистая остановка контейнера
+Философия Docker:
+НЕ надо:
+
+❌ Запускать nginx + php-fpm + mysql в одном контейнере
+❌ Использовать supervisord или systemd
+❌ Пытаться сделать контейнер похожим на VM
+НАДО:
+
+✅ nginx в отдельном контейнере
+✅ php-fpm в отдельном контейнере
+✅ mysql в отдельном контейнере
+✅ Связать их через docker network
+Именно это ты и сделал! ✅
+
+Как проверить что всё правильно:
+Проверка 1: Какой процесс PID 1?
+Хороший результат:
+
+Плохой результат:
+
+Проверка 2: Foreground режим?
+Должно быть daemon off в команде.
+
+Проверка 3: Graceful остановка?
+Должно остановиться за ~1 секунду (graceful)
+Не за 10 секунд (принудительное убийство)
