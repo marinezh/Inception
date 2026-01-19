@@ -1,4 +1,9 @@
-FROM alpine:3.19
+FROM alpine:3.20
+
+# Create www-data user/group (Alpine doesn't have it by default)
+RUN set -x \
+    && addgroup -g 82 -S www-data \
+    && adduser -u 82 -D -S -G www-data www-data
 
 RUN apk add --no-cache \
     php82 \
@@ -18,12 +23,18 @@ RUN apk add --no-cache \
     php82-xmlwriter \
     php82-session \
     php82-tokenizer \
+    php82-ctype \
+    php82-fileinfo \
+    php82-iconv \
+    php82-simplexml \
+    php82-xmlreader \
     wget \
     curl \
     mariadb-client \
     netcat-openbsd
 
-RUN mkdir -p /run/php /var/log/php82
+RUN mkdir -p /run/php /var/log/php82 \
+    && chown -R www-data:www-data /run/php /var/log/php82
 
 # Install WP-CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
