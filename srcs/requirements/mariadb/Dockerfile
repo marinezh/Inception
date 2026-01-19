@@ -1,15 +1,14 @@
-FROM debian:12
+FROM alpine:3.19
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    mariadb-server \
-    ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    mariadb \
+    mariadb-client
 
-# MariaDB runtime dirs (Debian packages expect these)
+# MariaDB runtime dirs
 RUN mkdir -p /run/mysqld /var/lib/mysql \
  && chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
-COPY conf/my.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
+COPY conf/my.cnf /etc/my.cnf.d/mariadb-server.cnf
 COPY tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh

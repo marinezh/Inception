@@ -1,21 +1,40 @@
-FROM debian:bookworm
+FROM alpine:3.19
 
-RUN apt update && apt install -y \
-    php-fpm php-mysql php-curl php-gd php-intl \
-    php-mbstring php-soap php-xml php-xmlrpc \
-    php-zip wget curl mariadb-client \
-    netcat-openbsd \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    php82 \
+    php82-fpm \
+    php82-mysqli \
+    php82-curl \
+    php82-gd \
+    php82-intl \
+    php82-mbstring \
+    php82-soap \
+    php82-xml \
+    php82-zip \
+    php82-phar \
+    php82-openssl \
+    php82-json \
+    php82-dom \
+    php82-xmlwriter \
+    php82-session \
+    php82-tokenizer \
+    wget \
+    curl \
+    mariadb-client \
+    netcat-openbsd
 
-RUN mkdir -p /run/php /var/log/php-fpm
+RUN mkdir -p /run/php /var/log/php82
 
 # Install WP-CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
 
+# Create symlink for PHP-FPM (Alpine uses php-fpm82)
+RUN ln -s /usr/sbin/php-fpm82 /usr/sbin/php-fpm
+
 # Copy PHP-FPM pool configuration
-COPY conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
+COPY conf/www.conf /etc/php82/php-fpm.d/www.conf
 
 COPY tools/wordpress.sh /usr/local/bin/wordpress.sh
 
