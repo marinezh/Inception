@@ -144,7 +144,7 @@ docker exec -it wordpress ss -lntp | grep 9000
 
 curl -kI https://mzhivoto.42.fr
 
-##show containers status
+##s how containers status
 $ docker ps
 or
 $ docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
@@ -152,3 +152,10 @@ $ docker ps --format "table {{.Names}}\t{{.Status}}"
 
 ## see logs
 $ docker logs --tail=200 wordpress
+
+## check images
+```bash
+docker inspect mariadb --format='{{.Config.Image}}'
+docker inspect wordpress --format='{{.Config.Image}}'
+docker inspect nginx --format='{{.Config.Image}}'
+```

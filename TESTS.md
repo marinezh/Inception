@@ -90,6 +90,13 @@ then
 curl -Ik https://mzhivoto.42.fr:8443
 ```
 
+##show containers status
+```bash
+ docker ps
+or
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+docker ps --format "table {{.Names}}\t{{.Status}}"
+```
 URL	Port used
 http://example.com	80
 https://example.com	443
@@ -113,6 +120,16 @@ So when you access via :8443, WordPress says:
 and sends you to default HTTPS port 443.
 Since you changed nginx away from 443 → you can’t follow the redirect.
 
+## change host name:
+1. sudo nano /etc/hosts
+2. add test.42.fr save and close
+3. nano srcs/.env 
+  change  DOMAIN_NAME=test.42.fr
+          WP_URL=https://test.42.fr
+
+4. change nginx.conf -> server_name -> test.42.fr
+5. make fclean, make
+6. curl -Ik http://test.42.fr
 
 ## Debugging:
 $ docker logs wordpress --tail=200
