@@ -1,9 +1,9 @@
 FROM alpine:3.20
 
-# Create www-data user/group (Alpine doesn't have it by default)
+# Create www-data user/group if they don't exist
 RUN set -x \
-    && addgroup -g 82 -S www-data \
-    && adduser -u 82 -D -S -G www-data www-data
+    && addgroup -g 82 -S www-data 2>/dev/null || true \
+    && adduser -u 82 -D -S -G www-data www-data 2>/dev/null || true
 
 RUN apk add --no-cache \
     php82 \
