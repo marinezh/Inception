@@ -108,4 +108,4 @@ fi
 chown -R www-data:www-data "$WP_PATH"
 
 echo "[wordpress] Starting PHP-FPM..."
-exec php-fpm82 -F -R
+exec php-fpm82 -F -y /etc/php82/php-fpm.conf

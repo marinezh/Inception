@@ -1,4 +1,4 @@
-FROM alpine:3.20
+FROM alpine:3.22
 
 # Create www-data user/group if they don't exist
 RUN set -x \
@@ -41,8 +41,9 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
 
-# Create symlink for PHP-FPM (Alpine uses php-fpm82)
-RUN ln -s /usr/sbin/php-fpm82 /usr/sbin/php-fpm
+# Create symlinks for PHP (Alpine uses php82)
+RUN ln -s /usr/bin/php82 /usr/bin/php \
+    && ln -s /usr/sbin/php-fpm82 /usr/sbin/php-fpm
 
 # Copy PHP-FPM pool configuration
 COPY conf/www.conf /etc/php82/php-fpm.d/www.conf
