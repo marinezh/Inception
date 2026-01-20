@@ -14,7 +14,6 @@ MARIADB_IMAGE = mariadb:42
 WORDPRESS_IMAGE = wordpress:42
 NGINX_IMAGE = nginx:42
 
-.PHONY: all up build down clean fclean re logs prepare-dirs
 
 all: up
 
@@ -41,15 +40,12 @@ clean: down
 fclean: down
 	$(COMPOSE) down -v --remove-orphans
 	$(SUDO) rm -rf $(DATA_DIRS)
-
+	@docker rmi -f $(MARIADB_IMAGE) $(WORDPRESS_IMAGE) $(NGINX_IMAGE)
+	
 re: fclean all
 
 logs:
 	$(COMPOSE) logs -f
 
-# Optional: wipe data using a throwaway container (useful if sudo is unavailable)
-.PHONY: wipe-data
-wipe-data: down
-	# Requires Docker Hub access to pull 'busybox' once
-	docker run --rm -v $(MARIADB_DATA_PATH):/data busybox sh -c "find /data -mindepth 1 -maxdepth 1 -exec rm -rf {} + || true"
-	docker run --rm -v $(WORDPRESS_DATA_PATH):/data busybox sh -c "find /data -mindepth 1 -maxdepth 1 -exec rm -rf {} + || true"
+.PHONY: all up build down clean fclean re logs prepare-dirs
+
