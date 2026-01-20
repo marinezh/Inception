@@ -19,11 +19,12 @@ all: up
 
 prepare-dirs:
 	@mkdir -p $(DATA_DIRS)
-	@if [ -d /home/mzhivoto/data ]; then \
-		chown -R $(USER):$(USER) /home/mzhivoto/data 2>/dev/null || true; \
-		chmod 755 /home/mzhivoto/data 2>/dev/null || true; \
-	fi
 	@chmod 755 $(DATA_DIRS) 2>/dev/null || true
+
+fix-permissions:
+	@echo "Fixing data directory permissions..."
+	@$(SUDO) chown -R $(USER):$(USER) $(DATA_DIRS) 2>/dev/null || true
+	@$(SUDO) chmod -R 755 $(DATA_DIRS) 2>/dev/null || true
 
 build: prepare-dirs
 	$(COMPOSE) build
@@ -37,7 +38,7 @@ down:
 clean: down
 	$(COMPOSE) rm -f
 
-fclean: down
+fclean: clean fix-permissions
 	$(COMPOSE) down -v --remove-orphans
 	rm -rf $(DATA_DIRS)
 	@docker rmi -f $(MARIADB_IMAGE) $(WORDPRESS_IMAGE) $(NGINX_IMAGE) 2>/dev/null || true
@@ -47,5 +48,5 @@ re: fclean all
 logs:
 	$(COMPOSE) logs -f
 
-.PHONY: all up build down clean fclean re logs prepare-dirs
+.PHONY: all up build down clean fclean re logs prepare-dirs fix-permissions
 
