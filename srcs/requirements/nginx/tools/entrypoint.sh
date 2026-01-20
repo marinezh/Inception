@@ -18,6 +18,10 @@ fi
 # Wait for WordPress files to be present to avoid initial 403
 TARGET="/var/www/html/index.php"
 echo "[nginx] Waiting for WordPress files at $TARGET ..."
+
+# Give volume mount a moment to stabilize (helps with reboot scenarios)
+sleep 3
+
 i=0
 for i in $(seq 1 60); do
   if [ -f "$TARGET" ]; then

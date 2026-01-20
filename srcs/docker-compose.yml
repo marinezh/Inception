@@ -22,7 +22,7 @@ services:
     expose:
       - "3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-P", "3306"]
+      test: ["CMD", "mysqladmin", "ping", "--silent"]
       interval: 10s
       retries: 15
       timeout: 10s
@@ -61,7 +61,7 @@ services:
         condition: service_healthy
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pgrep php-fpm || exit 1"]
+      test: ["CMD-SHELL", "test -f /var/www/html/index.php && pgrep php-fpm || exit 1"]
       interval: 10s
       retries: 5
       timeout: 10s

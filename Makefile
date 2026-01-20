@@ -20,10 +20,10 @@ all: up
 prepare-dirs:
 	@mkdir -p $(DATA_DIRS)
 	@if [ -d /home/mzhivoto/data ]; then \
-		$(SUDO) chown -R $(USER):$(USER) /home/mzhivoto/data; \
-		$(SUDO) chmod 755 /home/mzhivoto/data; \
+		chown -R $(USER):$(USER) /home/mzhivoto/data 2>/dev/null || true; \
+		chmod 755 /home/mzhivoto/data 2>/dev/null || true; \
 	fi
-	@$(SUDO) chmod 755 $(DATA_DIRS) 2>/dev/null || true
+	@chmod 755 $(DATA_DIRS) 2>/dev/null || true
 
 build: prepare-dirs
 	$(COMPOSE) build
@@ -39,8 +39,8 @@ clean: down
 
 fclean: down
 	$(COMPOSE) down -v --remove-orphans
-	$(SUDO) rm -rf $(DATA_DIRS)
-	@docker rmi -f $(MARIADB_IMAGE) $(WORDPRESS_IMAGE) $(NGINX_IMAGE)
+	rm -rf $(DATA_DIRS)
+	@docker rmi -f $(MARIADB_IMAGE) $(WORDPRESS_IMAGE) $(NGINX_IMAGE) 2>/dev/null || true
 	
 re: fclean all
 
