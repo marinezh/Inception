@@ -718,31 +718,6 @@ docker history nginx:42
 
 ---
 
-## Advanced Topics
-
-### Custom Build Arguments
-
-**Pass build arguments:**
-```yaml
-# In docker-compose.yml
-services:
-  nginx:
-    build:
-      context: ./requirements/nginx
-      args:
-        NGINX_VERSION: 1.24
-```
-
-### Multi-Stage Builds (if needed)
-
-Not currently used in this project, but can be added:
-
-```dockerfile
-# Example: Multi-stage build
-FROM alpine:3.22 AS builder
-RUN apk add --no-cache build-base
-# ... build steps ...
-
 # Final stage
 FROM alpine:3.22
 COPY --from=builder /app/binary /usr/local/bin/
@@ -921,75 +896,6 @@ ls -la /home/mzhivoto/data/
 # Fix permissions
 sudo chown -R $USER:$USER /home/mzhivoto/data/
 ```
-
-### Performance Issues
-
-**High CPU usage:**
-```bash
-# Check which container
-docker stats
-
-# Check processes
-docker top <container>
-```
-
-**High memory usage:**
-```bash
-# Check memory
-docker stats
-
-# Set memory limits in docker-compose.yml
-services:
-  nginx:
-    mem_limit: 512m
-```
-
-**Slow builds:**
-```bash
-# Use build cache
-docker compose build
-
-# Clean and rebuild
-docker builder prune
-docker compose build --no-cache
-```
-
----
-
-## Best Practices for Development
-
-### Code Organization
-
-- ✅ Keep Dockerfiles simple and readable
-- ✅ Use `.dockerignore` to exclude unnecessary files
-- ✅ One service per container
-- ✅ Use multi-stage builds for complex builds
-- ✅ Comment your code and configurations
-
-### Configuration Management
-
-- ✅ Use environment variables for configuration
-- ✅ Use Docker secrets for sensitive data
-- ✅ Keep `.env.example` updated
-- ✅ Never commit secrets to Git
-- ✅ Document all configuration options
-
-### Testing
-
-- ✅ Test builds locally before committing
-- ✅ Test with clean volumes (`make fclean && make`)
-- ✅ Verify healthchecks work
-- ✅ Test error scenarios
-- ✅ Check logs for warnings/errors
-
-### Version Control
-
-- ✅ Commit often with clear messages
-- ✅ Use branches for new features
-- ✅ Keep `.gitignore` updated
-- ✅ Don't commit generated files
-- ✅ Review changes before committing
-
 ---
 
 ## Useful Commands Reference

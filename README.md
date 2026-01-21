@@ -77,31 +77,6 @@ For detailed instructions, see [USER_DOC.md](USER_DOC.md) or [DEV_DOC.md](DEV_DO
 
 ---
 
-## Project Structure
-
-```
-Inception/
-├── Makefile                    # Build automation
-├── README.md                   # This file (project overview)
-├── USER_DOC.md                # User/administrator documentation
-├── DEV_DOC.md                 # Developer documentation
-├── secrets/                    # Sensitive credentials (gitignored)
-│   ├── db_password.txt
-│   ├── db_root_password.txt
-│   ├── wp_admin_password.txt
-│   └── wp_user_password.txt
-└── srcs/
-    ├── .env                    # Environment configuration (gitignored)
-    ├── .env.example            # Environment template
-    ├── docker-compose.yml      # Service orchestration
-    └── requirements/
-        ├── mariadb/           # Database container
-        ├── nginx/             # Web server container
-        └── wordpress/         # WordPress + PHP-FPM container
-```
-
----
-
 ## Common Commands
 
 ```bash
@@ -150,18 +125,11 @@ For more commands, see [DEV_DOC.md](DEV_DOC.md).
 - **Documentation clarification** - Understanding complex Docker networking and volume concepts
 - **Script optimization** - Improving entrypoint scripts for robustness and error handling
 - **Documentation support** - Drafting and refining documentation files (README.md, USER_DOC.md, DEV_DOC.md)
-- **Technical explanations** - Reviewing project structure against requirements (services, networking, secrets vs environment variables, storage choices)
-
-**AI was NOT used for:**
-- Writing the core Dockerfiles from scratch
-- Initial service configuration files (nginx.conf, my.cnf, www.conf)
-- Docker Compose structure and design decisions
-- Makefile creation and build system design
 
 All AI-generated recommendations were manually evaluated, tested, and adapted before implementation.
 
 ---
-
+## Project Structure
 ```
 Inception/
 ├── Makefile                    # Build automation
@@ -282,16 +250,6 @@ environment:
 - ✅ Secrets stored separately from code (gitignored)
 - ✅ Non-sensitive config remains easy to override
 
-### Docker Network vs Host Network
-
-| Network Mode | Docker Network (Bridge) | Host Network |
-|--------------|------------------------|--------------|
-| **Isolation** | Containers have isolated network stack | Containers share host network stack |
-| **Port Mapping** | Required (`-p 443:443`) | Not needed (direct host ports) |
-| **DNS** | Built-in service discovery by name | Manual IP management |
-| **Security** | Isolated, controlled exposure | Direct exposure to host network |
-| **Performance** | Slight overhead (NAT) | No overhead |
-| **Use Case** | Standard containerized apps | Network-intensive apps, monitoring |
 
 **Implementation in this project:**
 
