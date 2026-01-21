@@ -18,14 +18,14 @@ This document explains how to set up, develop, and manage the Inception project 
 - Text editor (vim, nano, VSCode, etc.)
 
 **System Requirements:**
-- Linux or macOS (tested on Debian/Ubuntu and macOS)
+- Linux or macOS
 - At least 2GB free disk space
 - Minimum 4GB RAM
 - Internet connection (for initial image pulls and WordPress download)
 
 ### Installing Docker
 
-**On Ubuntu/Debian:**
+**On Linux (Ubuntu/Debian/Fedora):**
 ```bash
 # Install Docker
 curl -fsSL https://get.docker.com | sh
@@ -738,13 +738,13 @@ services:
 Not currently used in this project, but can be added:
 
 ```dockerfile
-# Builder stage
+# Example: Multi-stage build
 FROM alpine:3.22 AS builder
-RUN apt-get update && apt-get install -y build-essential
+RUN apk add --no-cache build-base
 # ... build steps ...
 
 # Final stage
-FROM debian:bookworm
+FROM alpine:3.22
 COPY --from=builder /app/binary /usr/local/bin/
 ```
 
@@ -763,18 +763,94 @@ services:
 
 Run with: `docker compose --profile debug up`
 
-### Healthcheck Customization
+### Healthcheck Configuration
 
-Modify healthchecks in docker-compose.yml:
+Docker healthchecks monitor container health and allow dependent services to wait for readiness.
 
+#### Current Healthchecks in docker-compose.yml
+
+**MariaDB:**
 ```yaml
 healthcheck:
-  test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-  interval: 10s      # Check every 10 seconds
-  timeout: 5s        # Timeout after 5 seconds
-  retries: 3         # Retry 3 times
-  start_period: 30s  # Wait 30s before first check
+  test: ["CMD", "mysqladmin", "ping", "--silent"]
+  interval: 10s
+  retries: 15
+  timeout: 10s
+  start_period: 30s
 ```
+
+**What each field means:**
+- `test`: The command to run to check health
+  - `["CMD", "command", "args"]` - Executes command directly without shell
+  - `["CMD-SHELL", "command"]` - Executes command through shell (allows `&&`, `||`, pipes)
+- `interval`: How often to run the check (default: 30s)
+- `retries`: Number of consecutive failures before marking unhealthy (default: 3)
+- `timeout`: Maximum time to wait for check to complete (default: 30s)
+- `start_period`: Grace period before first check (container initialization time)
+
+**MariaDB test explained:**
+- `mysqladmin ping --silent` - Checks if MariaDB server responds
+- Uses Unix socket (no password needed)
+- Returns exit code 0 if healthy, non-zero if unhealthy
+
+**WordPress:**
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "test -f /var/www/html/index.php && pgrep php-fpm || exit 1"]
+  interval: 10s
+  retries: 5
+  timeout: 10s
+  start_period: 110s
+```
+
+**WordPress test explained:**
+- `test -f /var/www/html/index.php` - Checks if WordPress files exist
+- `&&` - AND operator (only continue if previous succeeded)
+- `pgrep php-fpm` - Checks if PHP-FPM process is running
+- `|| exit 1` - OR operator (if anything failed, exit with code 1)
+- Uses `CMD-SHELL` because we need shell operators (`&&`, `||`)
+- `start_period: 110s` - WordPress needs time to download/install
+
+**NGINX:**
+- No healthcheck needed (depends on WordPress healthcheck)
+- Starts only after WordPress is healthy
+
+#### How Dependencies Work
+
+```yaml
+wordpress:
+  depends_on:
+    mariadb:
+      condition: service_healthy  # Wait for MariaDB healthcheck
+
+nginx:
+  depends_on:
+    wordpress:
+      condition: service_healthy  # Wait for WordPress healthcheck
+```
+
+**Startup order:**
+1. MariaDB starts → healthcheck passes
+2. WordPress starts → healthcheck passes
+3. NGINX starts → serves traffic
+
+#### Checking Container Health
+
+```bash
+# View health status
+docker ps
+
+# View health logs
+docker inspect wordpress | grep -A10 Health
+
+# Watch health status in real-time
+watch -n1 'docker ps --format "table {{.Names}}\t{{.Status}}"'
+```
+
+**Health statuses:**
+- `starting` - Within start_period, failures don't count
+- `healthy` - Healthcheck passing
+- `unhealthy` - Failed retries times in a row
 
 ---
 

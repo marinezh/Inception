@@ -32,7 +32,7 @@ Inception is a system administration and DevOps project that focuses on Docker c
 - **WordPress** - Content management system with PHP-FPM
 - **MariaDB** - Relational database management system
 
-Each service runs in its own dedicated container built from custom Dockerfiles (using penultimate stable Debian version). The infrastructure uses Docker networks for inter-container communication, Docker volumes for data persistence, and Docker secrets for secure credential management.
+Each service runs in its own dedicated container built from custom Dockerfiles (using Alpine 3.22 - penultimate stable version). The infrastructure uses Docker networks for inter-container communication, Docker volumes for data persistence, and Docker secrets for secure credential management.
 
 This project demonstrates understanding of:
 - Docker containerization and image building
@@ -214,7 +214,7 @@ This project uses Docker to containerize three services, each in its own isolate
 
 **Key Design Principles:**
 - One service per container (separation of concerns)
-- Custom Dockerfiles from Debian base (no pre-built images like alpine-nginx)
+- Custom Dockerfiles from Alpine Linux base (no pre-built images)
 - Foreground process execution (no daemon mode hacks)
 - Proper PID 1 handling with `exec` command
 - Healthchecks for service orchestration
