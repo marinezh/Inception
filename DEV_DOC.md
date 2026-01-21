@@ -739,7 +739,7 @@ Not currently used in this project, but can be added:
 
 ```dockerfile
 # Builder stage
-FROM debian:bookworm AS builder
+FROM alpine:3.22 AS builder
 RUN apt-get update && apt-get install -y build-essential
 # ... build steps ...
 

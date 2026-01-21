@@ -4,7 +4,7 @@
 #                                                                              #
 #    Base: Alpine 3.22 (penultimate stable - requirement)                      #
 #    Purpose: Reverse proxy, serves WordPress via HTTPS only                   #
-#    Port: 443 (TLSv1.2, TLSv1.3)                                             #
+#    Port: 443 (TLSv1.2, TLSv1.3)                                              #
 #                                                                              #
 # **************************************************************************** #
 

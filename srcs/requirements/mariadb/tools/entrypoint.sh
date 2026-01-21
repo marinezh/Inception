@@ -4,9 +4,9 @@
 #    MariaDB Entrypoint Script                                                 #
 #                                                                              #
 #    Purpose:                                                                  #
-#    1. Load database credentials from Docker secrets                         #
-#    2. Initialize database on first run (create DB, users, grants)           #
-#    3. Start MariaDB server in foreground mode (PID 1 for Docker)            #
+#    1. Load database credentials from Docker secrets                          #
+#    2. Initialize database on first run (create DB, users, grants)            #
+#    3. Start MariaDB server in foreground mode (PID 1 for Docker)             #
 #                                                                              #
 # **************************************************************************** #
 
@@ -71,11 +71,13 @@ if [ ! -f "$INIT_MARKER" ]; then
   # - Create WordPress user with remote access (%)
   # - Grant all privileges on WordPress database to WordPress user
   mariadb --socket=/run/mysqld/mysqld.sock <<-SQL
-    ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
-    CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
-    CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
-    GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
-    FLUSH PRIVILEGES;
+   ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';
+   CREATE DATABASE IF NOT EXISTS \`${MYSQL_DATABASE}\`;
+   CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD}';
+   CREATE USER IF NOT EXISTS '${MYSQL_USER}'@'localhost' IDENTIFIED BY '${MYSQL_PASSWORD}';
+   GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
+   GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'localhost';
+   FLUSH PRIVILEGES;
 SQL
 
   # Shutdown temporary server gracefully

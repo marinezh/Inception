@@ -4,9 +4,9 @@
 #    NGINX Entrypoint Script                                                   #
 #                                                                              #
 #    Purpose:                                                                  #
-#    1. Generate self-signed SSL certificate (TLSv1.2/1.3)                    #
-#    2. Wait for WordPress files to be ready (shared volume)                  #
-#    3. Start NGINX in foreground mode (PID 1 for Docker)                     #
+#    1. Generate self-signed SSL certificate (TLSv1.2/1.3)                     #
+#    2. Wait for WordPress files to be ready (shared volume)                   #
+#    3. Start NGINX in foreground mode (PID 1 for Docker)                      #
 #                                                                              #
 # **************************************************************************** #
 

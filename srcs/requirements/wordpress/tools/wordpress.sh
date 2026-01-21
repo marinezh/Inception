@@ -4,12 +4,12 @@
 #    WordPress + PHP-FPM Entrypoint Script                                     #
 #                                                                              #
 #    Purpose:                                                                  #
-#    1. Load credentials from Docker secrets                                  #
-#    2. Download WordPress core files (if not present)                        #
-#    3. Wait for MariaDB to be ready                                          #
-#    4. Configure WordPress (wp-config.php)                                   #
-#    5. Install WordPress (create admin, create second user)                  #
-#    6. Start PHP-FPM in foreground mode (PID 1 for Docker)                   #
+#    1. Load credentials from Docker secrets                                   #
+#    2. Download WordPress core files (if not present)                         #
+#    3. Wait for MariaDB to be ready                                           #
+#    4. Configure WordPress (wp-config.php)                                    #
+#    5. Install WordPress (create admin, create second user)                   #
+#    6. Start PHP-FPM in foreground mode (PID 1 for Docker)                    #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,6 +54,10 @@ fi
 : "${WP_ADMIN_USER:?WP_ADMIN_USER is required}"
 : "${WP_ADMIN_PASSWORD:?WP_ADMIN_PASSWORD (or WP_ADMIN_PASSWORD_FILE) is required}"
 : "${WP_ADMIN_EMAIL:?WP_ADMIN_EMAIL is required}"
+
+# Second user (defaults if not provided)
+WP_USER_NAME="${WP_USER_NAME:-editor}"
+WP_USER_EMAIL="${WP_USER_EMAIL:-editor@example.com}"
 
 : "${MYSQL_PASSWORD:?MYSQL_PASSWORD (or MYSQL_PASSWORD_FILE) is required}"
 MYSQL_PORT="${MYSQL_PORT:-3306}"
@@ -125,18 +129,18 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
     --allow-root
 
   # Create second user (subject requirement: minimum 2 users)
-  if ! wp user get editor --path="$WP_PATH" --allow-root >/dev/null 2>&1; then
-    echo "[wordpress] Creating secondary WordPress user (editor)..."
+  if ! wp user get "$WP_USER_NAME" --path="$WP_PATH" --allow-root >/dev/null 2>&1; then
+    echo "[wordpress] Creating secondary WordPress user ($WP_USER_NAME)..."
     if [ -n "${WP_USER_PASSWORD:-}" ]; then
       wp user create \
-        editor editor@example.com \
+        "$WP_USER_NAME" "$WP_USER_EMAIL" \
         --role=editor \
         --user_pass="$WP_USER_PASSWORD" \
         --path="$WP_PATH" \
         --allow-root
     else
       wp user create \
-        editor editor@example.com \
+        "$WP_USER_NAME" "$WP_USER_EMAIL" \
         --role=editor \
         --path="$WP_PATH" \
         --allow-root

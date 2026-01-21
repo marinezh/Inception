@@ -84,8 +84,8 @@ docker compose up -d
 4. All services become available
 
 **Startup time:** 
-- First run: 2-3 minutes (downloads WordPress, initializes DB)
-- Subsequent runs: 10-30 seconds
+- First run: 5-7 minutes (downloads WordPress, initializes DB)
+- Subsequent runs: 60-80 seconds
 
 ### Stopping the Services
 
@@ -209,43 +209,6 @@ cat secrets/wp_admin_password.txt
 cat secrets/db_root_password.txt
 ```
 
-### Changing Credentials
-
-⚠️ **Important:** Changing passwords after initial setup requires multiple steps.
-
-**To change WordPress admin password:**
-
-1. **Method 1: Via WordPress Admin Panel (Easiest)**
-   - Log in to wp-admin
-   - Go to Users → Your Profile
-   - Scroll to "New Password"
-   - Generate and save new password
-   - Update `secrets/wp_admin_password.txt` with new password
-
-2. **Method 2: Via WP-CLI**
-   ```bash
-   # Update password
-   docker exec wordpress wp user update admin --user_pass="newpassword" --allow-root
-   
-   # Update secret file
-   echo "newpassword" > secrets/wp_admin_password.txt
-   ```
-
-**To change database passwords:**
-
-⚠️ **Not recommended after initial setup** - requires:
-1. Updating secret files
-2. Recreating database
-3. Reimporting data
-4. Reconfiguring WordPress
-
-If absolutely necessary:
-```bash
-make fclean  # Destroys all data!
-# Update secrets/db_password.txt
-make        # Recreate everything
-```
-
 ### Security Best Practices
 
 **DO:**
@@ -356,117 +319,6 @@ docker exec mariadb mariadb -u root -p"$(cat secrets/db_root_password.txt)" word
 ```
 
 Should list WordPress tables (wp_posts, wp_users, etc.)
-
-### Performance Monitoring
-
-**Check resource usage:**
-```bash
-docker stats
-```
-
-Shows CPU, memory, network usage for all containers.
-
-**Check disk usage:**
-```bash
-docker system df
-```
-
-Shows space used by images, containers, and volumes.
-
----
-
-## Common Issues and Solutions
-
-### Issue: Website not accessible
-
-**Symptoms:** Browser shows "This site can't be reached"
-
-**Solutions:**
-1. Check containers are running: `docker ps`
-2. Check domain in /etc/hosts: `grep mzhivoto.42.fr /etc/hosts`
-3. Check port 443 is accessible: `sudo lsof -i :443`
-4. Check firewall isn't blocking port 443
-
-### Issue: Database connection error
-
-**Symptoms:** WordPress shows "Error establishing database connection"
-
-**Solutions:**
-1. Check MariaDB is running: `docker ps | grep mariadb`
-2. Wait 30 seconds for MariaDB to be ready
-3. Check logs: `docker logs mariadb`
-4. Verify credentials match:
-   ```bash
-   docker exec mariadb mariadb -u wp_user -p"$(cat secrets/db_password.txt)" wordpress
-   ```
-
-### Issue: SSL certificate errors
-
-**Symptoms:** Browser shows "NET::ERR_CERT_AUTHORITY_INVALID"
-
-**Solutions:**
-- This is normal for self-signed certificates
-- Click "Advanced" and proceed anyway (safe for local development)
-- Or regenerate certificate:
-  ```bash
-  docker exec nginx rm -f /etc/nginx/ssl/server.*
-  docker restart nginx
-  ```
-
-### Issue: Changes not appearing
-
-**Symptoms:** Code/config changes don't take effect
-
-**Solutions:**
-1. Rebuild containers: `make re`
-2. Clear browser cache (Ctrl+Shift+R / Cmd+Shift+R)
-3. Check you're editing the right files (in bind-mounted volumes)
-
-### Issue: Port 443 already in use
-
-**Symptoms:** Error: "port is already allocated"
-
-**Solutions:**
-1. Find what's using port 443: `sudo lsof -i :443`
-2. Stop conflicting service:
-   ```bash
-   sudo systemctl stop apache2  # If Apache is running
-   sudo systemctl stop nginx    # If system nginx is running
-   ```
-3. Or change port in `docker-compose.yml`: `ports: - "8443:443"`
-
----
-
-## Data Backup and Restore
-
-### Backing Up Data
-
-**Backup database:**
-```bash
-docker exec mariadb mariadb-dump -u root -p"$(cat secrets/db_root_password.txt)" wordpress > backup_db.sql
-```
-
-**Backup WordPress files:**
-```bash
-tar -czf backup_wp.tar.gz /home/mzhivoto/data/wordpress
-```
-
-**Backup secrets:**
-```bash
-tar -czf backup_secrets.tar.gz secrets/
-```
-
-### Restoring Data
-
-**Restore database:**
-```bash
-cat backup_db.sql | docker exec -i mariadb mariadb -u root -p"$(cat secrets/db_root_password.txt)" wordpress
-```
-
-**Restore WordPress files:**
-```bash
-tar -xzf backup_wp.tar.gz -C /
-```
 
 ---
 
