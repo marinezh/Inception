@@ -232,6 +232,47 @@ On host computer terminal:
 ssh mzhivoto@10.11.200.202
 ```
 
+# STEP 6 — Create SSH Config (Optional but Recommended)
+
+This makes connecting easier - you can just type `ssh school-vm` instead of the full command.
+
+On your **Linux school machine**, create/edit the SSH config file:
+
+```bash
+nano ~/.ssh/config
+```
+
+Add this configuration (replace the IP if different):
+
+```
+Host school-vm
+    HostName 10.11.200.202
+    User mzhivoto
+    Port 22
+```
+
+**What each line means:**
+- `Host school-vm` → The nickname you'll use (can be anything)
+- `HostName 10.11.200.202` → Your VM's IP address
+- `User mzhivoto` → Your username on the VM
+- `Port 22` → SSH port (default is 22)
+
+**Save and exit:**
+- Press `Ctrl + O` then `Enter` to save
+- Press `Ctrl + X` to exit
+
+**Set correct permissions:**
+```bash
+chmod 600 ~/.ssh/config
+```
+
+**Now you can connect simply with:**
+```bash
+ssh school-vm
+```
+
+Instead of typing the full `ssh mzhivoto@10.11.200.202` every time!
+
 # Useful
 See ssh config file:
 ```bash

@@ -1,6 +1,29 @@
-.git
-.env
-node_modules
+# Documentation
+*.md
+README*
+
+# Git
+.git/
+.gitignore
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Temporary files
 *.log
+*.tmp
+*.bak
+
+# Build artifacts
+*.o
+*.so
+
+# Project specific
+.env
+node_modules/
 data/
 wordpress/

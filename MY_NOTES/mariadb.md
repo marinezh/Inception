@@ -5,12 +5,10 @@ docker exec -it mariadb mariadb -u root -p
 or
 ```bash
 docker exec -it mariadb mariadb -u wp_user -p
-```
-or
-```bash
-docker exec -it mariadb sh -lc 'mariadb -u wp_user -p"$(cat /run/secrets/db_password)" wordpress'
+docker exec -it wordpress mariadb -h mariadb -u wp_user -p wordpress
 
 ```
+
 2. Choose wordpress db
 ```sql
 SHOW DATABASES;
